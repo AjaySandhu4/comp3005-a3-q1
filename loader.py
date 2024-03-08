@@ -39,9 +39,11 @@ def loadInitialData():
         with db_conn.cursor() as cursor:
             cursor.execute('DROP TABLE IF EXISTS students')
 
+            # Creates table with specified schema
             table_creation = "CREATE TABLE students (student_id SERIAL PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, enrollment_date DATE);"
             cursor.execute(table_creation)
-
+            
+            # Insert default student tuples
             insertion_tuples = (('John', 'Doe', 'john.doe@example.com', '2023-09-01'),('Jane', 'Smith', 'jane.smith@example.com', '2023-09-01'),('Jim', 'Beam', 'jim.beam@example.com', '2023-09-02'))
             cursor.executemany('INSERT INTO students (first_name, last_name, email, enrollment_date) VALUES(%s,%s,%s,%s)', insertion_tuples)
 
