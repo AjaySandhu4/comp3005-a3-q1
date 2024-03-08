@@ -18,7 +18,7 @@ def main():
         print('\t 2. Add student')
         print('\t 3. Update student email')
         print('\t 4. Delete student')
-        print('\t 5. Save and quit')
+        print('\t 5. Quit')
         try:
             option = input()
             if(option == '1'):
@@ -34,10 +34,7 @@ def main():
                 email = input()
                 print('Enter enrollment date: ')
                 enrollment_date = input()
-                try:
-                    addStudent(first_name, last_name, email, enrollment_date)
-                except:
-                    print('Failed to add student')
+                addStudent(first_name, last_name, email, enrollment_date)
             elif(option == '3'):
                 print('Updating student email...')
                 print('Enter student id')
@@ -52,7 +49,6 @@ def main():
                 deleteStudent(student_id)
             elif(option == '5'):
                 print('Bye!')
-                db_conn.commit()
                 db_conn.close()
                 break
             else:
@@ -75,24 +71,44 @@ def connectToDatabase(user, pwd):
 # Retrieves and displays all student tuples
 def getAllStudents():
     with db_conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM students")
-        rows = cursor.fetchall()
-        print(tabulate(rows, headers=['first_name',' last_name', 'email', 'enrollment_date'], tablefmt='fancy_grid'))
+        try:
+            cursor.execute("SELECT * FROM students")
+            rows = cursor.fetchall()
+            print(tabulate(rows, headers=['first_name',' last_name', 'email', 'enrollment_date'], tablefmt='fancy_grid'))
+        except:
+            print('Failed to retrieve students')
+            db_conn.rollback()
+
 
 # Adds student tuple
 def addStudent(first_name, last_name, email, enrollment_date):
     with db_conn.cursor() as cursor:
-        cursor.execute('INSERT INTO students (first_name, last_name, email, enrollment_date) VALUES(%s,%s,%s,%s)', (first_name, last_name, email, enrollment_date))
+        try:
+            cursor.execute('INSERT INTO students (first_name, last_name, email, enrollment_date) VALUES(%s,%s,%s,%s)', (first_name, last_name, email, enrollment_date))
+            db_conn.commit()
+        except:
+            print('Failed to add student')
+            db_conn.rollback()
 
 # Updates email of student tuple specified by student_id
 def updateStudentEmail(student_id, email):
     with db_conn.cursor() as cursor:
-        cursor.execute('UPDATE students SET email=%s WHERE student_id=%s', (email, student_id))
+        try:
+            cursor.execute('UPDATE students SET email=%s WHERE student_id=%s', (email, student_id))
+            db_conn.commit()
+        except:
+            print('Failed to update student')
+            db_conn.rollback()
 
 # Deletes student with specified student_id
 def deleteStudent(student_id):
     with db_conn.cursor() as cursor:
-        cursor.execute(f'DELETE FROM students WHERE student_id={student_id}')
+        try:
+            cursor.execute(f'DELETE FROM students WHERE student_id={student_id}')
+            db_conn.commit()
+        except:
+            print('Failed to delete student')
+            db_conn.rollback()
 
 if __name__ == '__main__':
     main()
