@@ -3,18 +3,22 @@ import getpass
 from tabulate import tabulate
 
 def main():
+
+    # Taking user credentials to connect to database
     print('Enter user: ')
     user = input()
     print('Enter password: ')
     pwd = getpass.getpass('')
     connectToDatabase(user, pwd)
+
+    # Control structure for user input
     while(True):
         print('\nSelect an option:')
         print('\t 1. Display all students')
         print('\t 2. Add student')
         print('\t 3. Update student email')
         print('\t 4. Delete student')
-        print('\t 5. Quit')
+        print('\t 5. Save and quit')
         try:
             option = input()
             if(option == '1'):
@@ -48,6 +52,7 @@ def main():
                 deleteStudent(student_id)
             elif(option == '5'):
                 print('Bye!')
+                db_conn.commit()
                 db_conn.close()
                 break
             else:
@@ -55,6 +60,8 @@ def main():
         except Exception as e:
             print(e)
 
+# Connects to postgres database
+# Assumes that database is a3 postgres is running locally on port 5432
 def connectToDatabase(user, pwd):
     try:
         global db_conn
@@ -65,20 +72,24 @@ def connectToDatabase(user, pwd):
         print('Failed to connect to database')
         exit(1)
 
+# Retrieves and displays all student tuples
 def getAllStudents():
     with db_conn.cursor() as cursor:
         cursor.execute("SELECT * FROM students")
         rows = cursor.fetchall()
         print(tabulate(rows, headers=['first_name',' last_name', 'email', 'enrollment_date'], tablefmt='fancy_grid'))
 
+# Adds student tuple
 def addStudent(first_name, last_name, email, enrollment_date):
     with db_conn.cursor() as cursor:
         cursor.execute('INSERT INTO students (first_name, last_name, email, enrollment_date) VALUES(%s,%s,%s,%s)', (first_name, last_name, email, enrollment_date))
 
+# Updates email of student tuple specified by student_id
 def updateStudentEmail(student_id, email):
     with db_conn.cursor() as cursor:
         cursor.execute('UPDATE students SET email=%s WHERE student_id=%s', (email, student_id))
 
+# Deletes student with specified student_id
 def deleteStudent(student_id):
     with db_conn.cursor() as cursor:
         cursor.execute(f'DELETE FROM students WHERE student_id={student_id}')
